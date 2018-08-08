@@ -1,0 +1,20 @@
+Offline I generated words for the word list. In order to do this I ran a script that went through the part-of-speech (POS) tagged BBC corpus and split on white space which made each line a new list that looked like this:
+['THE_#_the_#_ART', 'MAN_#_man_#_SUBST', 'IN_#_in_#_PREP', 'QUESTION_#_question_#_SUBST']
+
+I put this output into a file called trial.delete.
+
+I then ran the awk command: awk -F, '{for(i=1;i<NF;i++){if ($i~/SUBST/){print $i}}}' trial.delete > nouns.txt 
+
+This was to get all the nouns from the file because SUBST is the POS tag for noun. Each line looked like this:
+'MAKING_#_making_#_SUBST'
+
+This got me over 790,000 (including duplicates) nouns. 
+
+In nouns.txt I ran several vim sed commands to clean up the data to save myself from needing to do it on the command line.
+
+Example: $s/\[///
+
+Then I ran:
+awk -F'_#_' '{print tolower($1)}' nouns.txt | sort | uniq | awk '{if (8 < length()) {print $1}}' | grep -x '[a-z]\+' > modifyNouns.py 
+
+This lowercased all of the words, sorted them, uniqued them, and only kept words longer than 5 characters to return a total of 13,237 nouns. I only wanted words longer than 8 characters, one because too short of words would be too easy, and two, it was  way to not have to manually verify there were no clear initialisms in the data that weren't actually real words. The final grep command ensures that there are only ascii lowercase letters in the file.
